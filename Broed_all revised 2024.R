@@ -98,7 +98,7 @@ BS_data$Name_year <- rownames(BS_data)
 BS_data
 
 W_30min <- merge(W_30min, BS_data)
-W_30min_BS <- W_30min %>% filter(ymd(UTC_date) < ymd(End_BS) & ymd(UTC_date) > ymd(Start_BS))
+# W_30min_BS <- W_30min %>% filter(ymd(UTC_date) < ymd(End_BS) & ymd(UTC_date) > ymd(Start_BS))
 
 pal <- colorNumeric(c("orangered4","orangered"), 1:2)
 pal(1:2)
@@ -109,8 +109,8 @@ W_30min_loop <- W_30min[W_30min$day==TRUE,]
 # W_30min_loop <- W_30min
 
 #er loopt hier iets mis met de coördinaten, zowel latitude als longitude zijn 0:
-summary(W_30min_BS[,c("Longitude", "Latitude")])
-W_30min_BS[W_30min_BS$Latitude==0, c("Longitude", "Latitude")]
+summary(W_30min_loop[,c("Longitude", "Latitude")])
+W_30min_BS[W_30min_loop$Latitude==0, c("Longitude", "Latitude")]
 # ggplot(W_30min_BS, aes(Longitude, Latitude)) + geom_point()
 # ggplot(W_30min_loop, aes(Longitude, Latitude)) + geom_point()
 #deze waarnemingen verwijderen!
@@ -120,14 +120,14 @@ for (i in Name_year)
 {
   W_i <- W_30min_loop %>% filter(Name_year==i)
   W_i <- W_i %>% filter(ymd(UTC_date) < ymd(End_BS) & ymd(UTC_date) > ymd(Start_BS))
-  
+
   coordinates(W_i) <- c("Longitude", "Latitude")
   proj4string(W_i) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
-  
+
   Homerange <- kernelUD(W_i, grid=500, extent=1)
   HR_50 <- getverticeshr(Homerange, percent = 50)
   HR_95 <- getverticeshr(Homerange, percent = 95)
-  
+
   W_i_map <- W_i %>%
     leaflet() %>%
     addTiles(group = "OSM") %>%
@@ -136,23 +136,23 @@ for (i in Name_year)
     addPolygons(data = HR_95, fill = TRUE, color = ~pal(2), weight = 2) %>%
     addControl(paste(i), position = "topright") %>%
     addLegend("topright", colors = pal(1:2), labels = c("50% Kernel","95% Kernel"), opacity = 1)
-  
+
   shape_name_50 <- paste("Wulp ",i, " kernel 50", sep="")
   st_write(st_as_sf(HR_50), paste(shape_name_50), driver = "ESRI Shapefile")
-  
+
   shape_name_95 <- paste("Wulp ",i, " kernel 95", sep="")
   st_write(st_as_sf(HR_95), paste(shape_name_95), driver = "ESRI Shapefile")
-  
+
   filename_html <- paste("Wulp ",i,".html", sep="")
   saveWidget(W_i_map, file = filename_html)
-  
+
   filename_png <- paste("Wulp ",i,".png", sep="")
   webshot(filename_html, file = filename_png,
           cliprect = "viewport")
-  
+
   filename_html <- paste("Wulp ",i,".html", sep="")
   filename_png <- paste("Wulp ",i,".png", sep="")
-  
+
   saveWidget(W_i_map, file=filename_html)
   webshot(filename_html, file = filename_png,
           cliprect = "viewport")
@@ -160,20 +160,32 @@ for (i in Name_year)
 
 
 # overzichtskaart alle wulpen binnen BS_data
-factpal <- colorFactor(viridis(12), W$Naam)
-W1_map <- W_30min_BS %>%
-  leaflet() %>%
-  addTiles(group = "OSM") %>%
-  addCircles(lng=W_30min_BS$Longitude, lat=W_30min_BS$Latitude, color = ~factpal(W_30min_BS$Naam),radius=10) %>%
-  addLegend(pal = factpal, values = ~Naam, opacity = 1) %>%
-  fitBounds( lng1 = 5.11, lat1 = 50.80, lng2 = 5.13, lat2 = 50.98)
-W1_map
+factpal <- colorFactor(viridis(12), W_30min_loop$jaar)
 
-saveWidget(W1_map, file="Wulpen broedseizoen.html")
-webshot("Wulpen broedseizoen.html", file = "Wulpen broedseizoen.png",
-        cliprect = "viewport")
+for (i in c(2020:2022))
+{
+  W_i <- W_30min_loop %>% filter(Naam == i)
+  W_i <- W_i %>% filter(ymd(UTC_date) < ymd(End_BS) & ymd(UTC_date) > ymd(Start_BS))
+  
+  W_i_map <- W_i %>%
+    leaflet() %>%
+    addTiles(group = "OSM") %>%
+    addCircles(lng = W_i$Longitude, lat = W_i$Latitude, color = ~factpal(W_i$jaar),radius=10) %>%
+    # addPolygons(data = HR_50, fill = TRUE, color = ~pal(1), weight = 2) %>%
+    # addPolygons(data = HR_95, fill = TRUE, color = ~pal(2), weight = 2) %>%
+    addLegend(pal = factpal, values = ~jaar, opacity = 1)
+  
+  W_i_map
 
-write.csv2(W_30min_BS, "Broed_zit_dag.csv", row.names = FALSE)
+  filename_html <- paste("Wulp ",i, "_cumul_years.html", sep = "")
+  filename_png <- paste("Wulp ",i, "_cumul_years.png", sep = "")
+  
+  saveWidget(W_i_map, file = filename_html)
+  webshot(filename_html, file = filename_png, cliprect = "viewport")
+}
+
+Broed_zit_dag <- W_30min_loop %>% filter(ymd(UTC_date) < ymd(End_BS) & ymd(UTC_date) > ymd(Start_BS))
+write.csv2(Broed_zit_dag, "Broed_zit_dag.csv", row.names = FALSE)
 
 # #test vliegend/zittend
 # library(ggplot2)
