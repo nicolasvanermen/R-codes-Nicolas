@@ -66,7 +66,7 @@ W_30min$Naam_jaar <- paste(W_30min$Naam, W_30min$jaar)
 Naam_jaar <- unique(W_30min$Naam_jaar)
 Naam_jaar
 
-BS_data <- matrix(nrow=17, ncol=2, dimnames=list(Naam_jaar,c("Start_BS","End_BS")))
+BS_data <- matrix(nrow=17, ncol=2, dimnames=list(Naam_jaar,c("Start_BS","Einde_BS")))
 BS_data["Herlaar 2020",] <- c("2020-05-01","2020-06-01")
 BS_data["Henk-Jan 2020",] <- c("2020-05-06","2020-06-09")
 BS_data["Peter 2020",] <- c("2020-05-28","2020-07-05")
@@ -91,7 +91,7 @@ BS_data$Naam_jaar <- rownames(BS_data)
 BS_data
 
 W_30min <- merge(W_30min, BS_data)
-# W_30min_BS <- W_30min %>% filter(ymd(UTC_date) < ymd(End_BS) & ymd(UTC_date) > ymd(Start_BS))
+# W_30min_BS <- W_30min %>% filter(ymd(UTC_date) < ymd(Einde_BS) & ymd(UTC_date) > ymd(Start_BS))
 
 pal <- colorNumeric(c("orangered4","orangered"), 1:2)
 pal(1:2)
@@ -112,7 +112,7 @@ setwd("C:/Users/nicolas_vanermen/Desktop/Hilbran/Export")
 for (i in Naam_jaar)
 {
   W_i <- W_30min_loop %>% filter(Naam_jaar==i)
-  W_i <- W_i %>% filter(ymd(UTC_date) < ymd(End_BS) & ymd(UTC_date) > ymd(Start_BS))
+  W_i <- W_i %>% filter(ymd(UTC_date) < ymd(Einde_BS) & ymd(UTC_date) > ymd(Start_BS))
 
   coordinates(W_i) <- c("Longitude", "Latitude")
   proj4string(W_i) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
@@ -158,7 +158,7 @@ factpal <- colorFactor(viridis(12), W_30min_loop$jaar)
 for (i in unique(W_30min_loop$Naam))
 {
   W_i <- W_30min_loop %>% filter(Naam == i, jaar %in% c(2020:2022))
-  W_i <- W_i %>% filter(ymd(UTC_date) < ymd(End_BS) & ymd(UTC_date) > ymd(Start_BS))
+  W_i <- W_i %>% filter(ymd(UTC_date) < ymd(Einde_BS) & ymd(UTC_date) > ymd(Start_BS))
   
   W_i_map <- W_i %>%
     leaflet() %>%
@@ -175,5 +175,5 @@ for (i in unique(W_30min_loop$Naam))
   webshot(filename_html, file = filename_png, cliprect = "viewport")
 }
 
-Wulp_BS_niet_vliegend <- W_30min_loop %>% filter(ymd(UTC_date) < ymd(End_BS) & ymd(UTC_date) > ymd(Start_BS))
+Wulp_BS_niet_vliegend <- W_30min_loop %>% filter(ymd(UTC_date) < ymd(Einde_BS) & ymd(UTC_date) > ymd(Start_BS))
 write.csv2(Wulp_BS_niet_vliegend, "Wulp_BS_niet_vliegend.csv", row.names = FALSE)
