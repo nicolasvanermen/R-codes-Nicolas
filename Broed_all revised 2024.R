@@ -110,7 +110,7 @@ W_30min_loop <- W_30min[W_30min$day==TRUE,]
 
 #er loopt hier iets mis met de coördinaten, zowel latitude als longitude zijn 0:
 summary(W_30min_loop[,c("Longitude", "Latitude")])
-W_30min_BS[W_30min_loop$Latitude==0, c("Longitude", "Latitude")]
+W_30min_loop[W_30min_loop$Latitude==0, c("Longitude", "Latitude")]
 # ggplot(W_30min_BS, aes(Longitude, Latitude)) + geom_point()
 # ggplot(W_30min_loop, aes(Longitude, Latitude)) + geom_point()
 #deze waarnemingen verwijderen!
@@ -162,9 +162,9 @@ for (i in Name_year)
 # overzichtskaart alle wulpen binnen BS_data
 factpal <- colorFactor(viridis(12), W_30min_loop$jaar)
 
-for (i in c(2020:2022))
+for (i in unique(W_30min_loop$Naam))
 {
-  W_i <- W_30min_loop %>% filter(Naam == i)
+  W_i <- W_30min_loop %>% filter(Naam == i, jaar %in% c(2020:2022))
   W_i <- W_i %>% filter(ymd(UTC_date) < ymd(End_BS) & ymd(UTC_date) > ymd(Start_BS))
   
   W_i_map <- W_i %>%
