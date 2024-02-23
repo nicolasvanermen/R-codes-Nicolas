@@ -40,7 +40,7 @@ SAMPLES <- SAMPLES %>% mutate("ICES_PrimarySampling" = TRUE)
 SAMPLES <- SAMPLES %>% mutate("ICES_TargetTaxa" = 1)
 SAMPLES <- SAMPLES %>% mutate("ICES_DistanceBins" = "0|50|100|200|300")
 SAMPLES <- SAMPLES %>% mutate("ICES_UseOfBinoculars" = 3)
-SAMPLES <- SAMPLES %>% mutate("ICES_NumberOfObservers" = NA)
+SAMPLES <- SAMPLES %>% mutate("ICES_NumberOfObservers" = 2)
 SAMPLES <- SAMPLES %>% mutate("ICES_Notes" = NA)
 #select column and trim column names
 SAMPLES <- SAMPLES %>% select(starts_with("ICES_"))
