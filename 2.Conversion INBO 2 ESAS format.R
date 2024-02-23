@@ -7,7 +7,7 @@ TRP <- read.csv("TRIPALL_MERGE_1992_2023_c.csv", fileEncoding = "UTF-8")
 POS <- read.csv("BASEALL_MERGE_1992_2023_c.csv", fileEncoding = "UTF-8")
 OBS <- read.csv("BIRDALL_MERGE_1992_2023_c.csv", fileEncoding = "UTF-8")
 
-TRP <- TRP[ymd(TRP$Date) > "2023-05-01" & TRP$Ship == "SBE2",] 
+TRP <- TRP[ymd(TRP$Date) > "2022-01-01" & TRP$Ship == "SBE2",] 
 POS <- POS[POS$Tripkey %in% TRP$Tripkey,]
 OBS <- OBS[OBS$Poskey %in% POS$Poskey,]
 
@@ -80,7 +80,8 @@ colnames(POSITIONS) <- str_remove(colnames(POSITIONS), "ICES_")
 table(OBS$Distance, OBS$Transect)
 OBS <- OBS %>% mutate(
   Distance = ifelse(Distance %in% c("U"), "W", Distance),
-  Distance = ifelse(Distance %in% c("1","2","3"), "F", Distance))
+  Distance = ifelse(Distance %in% c("1","2","3"), "F", Distance),
+  Distance = ifelse(Distance%in%c("E") & Transect == 1, "W", Distance))
 table(OBS$Distance)
 levels(as.factor(OBS$Distance))
 
@@ -94,12 +95,14 @@ OBS$Association_recoded <- plyr::mapvalues(OBS$Association,
                              from = ASS$Association_INBO, to = ASS$Association_ESAS)
 table(OBS$Association)
 table(OBS$Association_recoded)
+sum(table(OBS$Association))==sum(table(OBS$Association_recoded))
 
 #Behaviour
 OBS$Behaviour_recoded <- plyr::mapvalues(OBS$Behaviour, 
                           from = BEH$Behaviour_INBO, to = BEH$Behaviour_ESAS)
 table(OBS$Behaviour)
 table(OBS$Behaviour_recoded)
+sum(table(OBS$Behaviour))==sum(table(OBS$Behaviour_recoded))
 
 #Transect
 OBS$Transect <- as.logical(OBS$Transect)
