@@ -154,13 +154,9 @@ BIRDALL_MERGE[sapply(BIRDALL_MERGE, is.character)] <- lapply(BIRDALL_MERGE[sappl
 BIRDALL_MERGE[BIRDALL_MERGE == ""] <- NA
 BIRDALL_MERGE <- droplevels(BIRDALL_MERGE)
 
-# summary(TRIPALL_MERGE)
-# summary(BASEALL_MERGE)
-# summary(BIRDALL_MERGE)
-
 #wegschrijven:
 setwd("C:/Users/nicolas_vanermen/Desktop/DATA INVOER/2023/UPDATES")
-write.csv(TRIPALL_MERGE,"TRIPALL_MERGE_1992_2023_b.csv", fileEncoding = "UTF-8")
-write.csv(BASEALL_MERGE,"BASEALL_MERGE_1992_2023_b.csv", fileEncoding = "UTF-8")
-write.csv(BIRDALL_MERGE,"BIRDALL_MERGE_1992_2023_b.csv", fileEncoding = "UTF-8")
+write.csv(TRIPALL_MERGE,"TRIPALL_MERGE_1992_2023_c.csv", fileEncoding = "UTF-8")
+write.csv(BASEALL_MERGE,"BASEALL_MERGE_1992_2023_c.csv", fileEncoding = "UTF-8")
+write.csv(BIRDALL_MERGE,"BIRDALL_MERGE_1992_2023_c.csv", fileEncoding = "UTF-8")
 
