@@ -1,0 +1,789 @@
+---
+title: "VALIDATION BE ESAS update feb 2024"
+author: "Nicolas Vanermen (INBO)"
+date: "23/02/2023"
+output:
+  html_document:
+   df_print: kable
+---
+
+```{r set-options, echo=FALSE, cache=FALSE}
+options(width = 100)
+```
+
+```{r, include=FALSE}
+library(knitr)
+library(leaflet)
+library(tidyverse)
+library(kableExtra)
+library(ggplot2)
+
+pathway <- "C:/Users/nicolas_vanermen/Desktop/DATA INVOER/CODING/ICES vocabs and columns/"
+filenames_VOCABS <- list.files(pathway, pattern = "*.csv", full.names = TRUE)
+
+for (i in 1:length(filenames_VOCABS)) 
+{ split <- str_remove(filenames_VOCABS[i], pattern = pathway)
+  name <- str_remove(split, pattern = ".csv")
+  file <- read.csv(filenames_VOCABS[i])
+  assign(x = name, value = file) }
+
+setwd("C:/Users/nicolas_vanermen/Desktop/DATA INVOER/2023/UPDATES")
+CAMPAIGNS <- read.csv("CAMPAIGNS_BE_ICES_update_feb_2024.csv")
+SAMPLES <- read.csv("SAMPLES_BE_ICES_update_feb_2024.csv")
+POSITIONS <- read.csv("POSITIONS_BE_ICES_update_feb_2024.csv")
+OBSERVATIONS <- read.csv("OBSERVATIONS_BE_ICES_update_feb_2024.csv")
+
+# setwd("C:/Users/nicolas_vanermen/Desktop/DATA INVOER/2021/CONVERSION ESAS")
+# CAMPAIGNS <- read.csv("CAMPAIGNS_BE_ICES_2022.csv")
+# SAMPLES <- read.csv("SAMPLES_BE_ICES_2022.csv")
+# POSITIONS <- read.csv("POSITIONS_BE_ICES_2022.csv")
+# OBSERVATIONS <- read.csv("OBSERVATIONS_BE_ICES_2022.csv")
+
+# #introduce errors in CAMPAIGNS
+# CAMPAIGNS <- rbind(CAMPAIGNS, CAMPAIGNS[1,])
+# colnames(CAMPAIGNS)[1] <- "CampaingID"
+# CAMPAIGNS[1:5,]$DataAccess <- NA
+# CAMPAIGNS[2,]$StartDate <- "18/02/2000"
+# CAMPAIGNS[4,]$EndDate <- "18 februari 2000"
+#
+# #introduce errors in SAMPLES
+# SAMPLES <- rbind(SAMPLES, SAMPLES[1,])
+# SAMPLES$CampaignID[1] <- 11001028
+# colnames(SAMPLES)[1] <- "SamplesID"
+# SAMPLES[2,]$Date <- "18/02/2000"
+# SAMPLES[5,]$PlatformCode <- NA
+# SAMPLES[4,]$PlatformCode <- "blabla"
+# SAMPLES[5,]$PlatformClass <- NA
+# SAMPLES[4,]$PlatformClass <- "blabla"
+# SAMPLES[1:3,]$TransectWidth <- NA
+# SAMPLES[4:6,]$SamplingMethod <- NA
+# SAMPLES[5:7,]$TargetTaxa <- NA
+# SAMPLES[5,]$UseOfBinoculars <- 10
+
+# #introduce errors in POSITIONS
+# POSITIONS <- rbind(POSITIONS, POSITIONS[1,])
+# POSITIONS$SampleID[1] <- 11201028
+# colnames(POSITIONS)[1] <- "PositionssID"
+# POSITIONS[2,]$Time <- "1111:11"
+# POSITIONS[5,]$Latitude <- NA
+# POSITIONS[4:100,]$Longitude <- 0
+# POSITIONS[5,]$Distance <- NA
+# POSITIONS[4,]$Area <- 0
+# POSITIONS[1:3,]$WindForce <- 15
+# POSITIONS[4:6,]$Visibility <- 11
+# POSITIONS[5:7,]$Glare <- "claire"
+# POSITIONS[5,]$IceCover <- 110
+
+# #introduce errors in OBSERVATIONS
+# OBSERVATIONS[5,]$SpeciesCode <- 6200
+```
+<div style="margin-top:75px;">
+
+#  NUMBER OF RECORDS
+
+CAMPAIGNS contains `r nrow(CAMPAIGNS)` records\
+SAMPLES contains `r nrow(SAMPLES)` records\
+POSITIONS contains `r nrow(POSITIONS)` records\
+OBSERVATIONS contains `r nrow(OBSERVATIONS)` records\
+
+<div style="margin-top:75px;">
+
+#  CHECK COLUMN NAMES
+
+colnames CAMPAIGNS: `r ifelse(sum(colnames(CAMPAIGNS)==CAMPAIGNS_column_names)==ncol(CAMPAIGNS), TRUE, FALSE)`\
+colnames SAMPLES: `r ifelse(sum(colnames(SAMPLES)==SAMPLES_column_names)==ncol(SAMPLES), TRUE, FALSE)`\
+colnames POSITIONS: `r ifelse(sum(colnames(POSITIONS)==POSITIONS_column_names)==ncol(POSITIONS), TRUE, FALSE)`\
+colnames OBSERVATIONS: `r ifelse(sum(colnames(OBSERVATIONS)==OBSERVATIONS_column_names)==ncol(OBSERVATIONS), TRUE, FALSE)`\
+
+<div style="margin-top:75px;">
+
+#  VALIDATE CAMPAIGNS 
+###  CampaignID *
+
+No missing values: `r sum(is.na(CAMPAIGNS$CampaignID))==0`\
+Unique identifier: `r length(unique(CAMPAIGNS$CampaignID))==nrow(CAMPAIGNS)`
+
+<div style="margin-top:35px;">
+
+###  DataAccess *
+
+No missing values: `r sum(is.na(CAMPAIGNS$DataAccess))==0`\
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+table_DataAccess <- as.data.frame(table(CAMPAIGNS$DataAccess))
+names(table_DataAccess)[1] <- "DataAccess"
+table_DataAccess %>%
+  kbl(table.attr = "style='width:30%;'") %>%
+  kable_styling(position = "left", font = 12)
+```
+
+<div style="margin-top:35px;">
+
+###  StartDate
+
+Formatted as YYYY-MM-DD: 
+`r  nrow(CAMPAIGNS[grepl("[0-9]{4}-[0-9]{2}-[0-9]{2}",CAMPAIGNS$StartDate),]) ==
+    nrow(CAMPAIGNS[!is.na(CAMPAIGNS$StartDate),])`
+
+<div style="margin-top:35px;">
+
+###  EndDate
+
+Formatted as YYYY-MM-DD: 
+`r  nrow(CAMPAIGNS[grepl("[0-9]{4}-[0-9]{2}-[0-9]{2}",CAMPAIGNS$EndDate),]) ==
+    nrow(CAMPAIGNS[!is.na(CAMPAIGNS$EndDate),])`
+
+<div style="margin-top:75px;">
+
+#  VALIDATE SAMPLES 
+###  CampaignID *
+
+No missing values: `r sum(is.na(SAMPLES$CampaignID))==0`\
+Link to CAMPAIGNS:
+`r nrow(SAMPLES[SAMPLES$CampaignID %in% CAMPAIGNS$CampaignID,])==nrow(SAMPLES)`
+
+<div style="margin-top:35px;">
+
+###  SampleID *
+
+No missing values: `r sum(is.na(SAMPLES$SampleID))==0`\
+Unique identifier: `r length(unique(SAMPLES$SampleID))==nrow(SAMPLES)`
+
+<div style="margin-top:35px;">
+
+###  Date *
+No missing values: `r sum(is.na(SAMPLES$Date))==0`\
+Formatted as YYYY-MM-DD: 
+`r  nrow(SAMPLES[grepl("[0-9]{4}-[0-9]{2}-[0-9]{2}",SAMPLES$Date),]) ==
+    nrow(SAMPLES)`
+
+<div style="margin-top:35px;">
+
+###  PlatformCode *
+
+No missing values: `r sum(is.na(SAMPLES$PlatformCode))==0`\
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+table_PlatformCode <- merge(
+  as.data.frame(table(SAMPLES$PlatformCode)), 
+  SHIPC[,c("Key","Description")], 
+  by.x="Var1", by.y="Key", all.x=T)
+names(table_PlatformCode)[1] <- "PlatformCode"
+table_PlatformCode[,c(1,3,2)]  %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+```
+
+<div style="margin-top:35px;">
+
+###  PlatformClass *
+
+No missing values: `r sum(is.na(SAMPLES$PlatformClass))==0`\
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+table_PlatformClass <- merge(
+  as.data.frame(table(SAMPLES$PlatformClass)),
+  PlatformClass[,c("Key","Description")], 
+  by.x="Var1", by.y="Key", all.x=T)
+names(table_PlatformClass)[1] <- "PlatformClass"
+table_PlatformClass[,c(1,3,2)] %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+```
+
+<div style="margin-top:35px;">
+
+###  PlatformSide
+
+Missing values: `r round(100*sum(is.na(SAMPLES$PlatformSide))/nrow(SAMPLES), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(SAMPLES$PlatformSide))>0)
+  {
+  table_PlatformSide <- as.data.frame(table(SAMPLES$PlatformSide))
+  names(table_PlatformSide)[1] <- "table_PlatformSide"
+  table_PlatformSide %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  PlatformHeight
+
+Missing values: `r round(100*sum(is.na(SAMPLES$PlatformHeight))/nrow(SAMPLES), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(SAMPLES$PlatformHeight))>0) 
+  {
+  table_PlatformHeight <- as.data.frame(table(SAMPLES$PlatformHeight))
+  names(table_PlatformHeight)[1] <- "table_PlatformHeight"
+  table_PlatformHeight %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  TransectWidth *
+
+No missing values: `r sum(is.na(SAMPLES$TransectWidth))==0`\
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+table_TransectWidth <- as.data.frame(table(SAMPLES$TransectWidth))
+names(table_TransectWidth)[1] <- "TransectWidth"
+table_TransectWidth %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+```
+
+<div style="margin-top:35px;">
+
+###  SamplingMethod *
+
+No missing values: `r sum(is.na(SAMPLES$SamplingMethod))==0`\
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+table_SamplingMethod <- merge(
+  as.data.frame(table(SAMPLES$SamplingMethod)),
+  BD_CountMethod[,c("Key","Description")], 
+  by.x="Var1", by.y="Key", all.x=T)
+names(table_SamplingMethod)[1] <- "SamplingMethod"
+table_SamplingMethod[,c(1,3,2)]  %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+```
+
+<div style="margin-top:35px;">
+
+###  PrimarySampling
+
+Missing values: `r round(100*sum(is.na(SAMPLES$PrimarySampling))/nrow(SAMPLES), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(SAMPLES$PrimarySampling))>0) 
+  {
+  table_PrimarySampling <- as.data.frame(table(SAMPLES$PrimarySampling))
+  names(table_PrimarySampling)[1] <- "PrimarySampling"
+  table_PrimarySampling %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  TargetTaxa *
+
+No missing values: `r sum(is.na(SAMPLES$TargetTaxa))==0`\
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+table_TargetTaxa <- merge(
+  as.data.frame(table(SAMPLES$TargetTaxa)),
+  TargetTaxa[,c("Key","Description")], 
+  by.x="Var1", by.y="Key", all.x=T)
+names(table_TargetTaxa)[1] <- "TargetTaxa"
+table_TargetTaxa[,c(1,3,2)] %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+```
+
+<div style="margin-top:35px;">
+
+###  DistanceBins
+
+Missing values: `r round(100*sum(is.na(SAMPLES$DistanceBins))/nrow(SAMPLES), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(SAMPLES$DistanceBins))>0) 
+  {
+  table_DistanceBins <- as.data.frame(table(SAMPLES$DistanceBins))
+  names(table_DistanceBins)[1] <- "DistanceBins"
+  table_DistanceBins %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  UseOfBinoculars
+
+Missing values: `r round(100*sum(is.na(SAMPLES$UseOfBinoculars))/nrow(SAMPLES), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(SAMPLES$UseOfBinoculars))>0) 
+  {
+  table_UseOfBinoculars <- merge(
+    as.data.frame(table(SAMPLES$UseOfBinoculars)), 
+    UseOfBinoculars[,c("Key","Description")], 
+    by.x="Var1", by.y="Key", all.x=T)
+  names(table_UseOfBinoculars)[1] <- "UseOfBinoculars"
+  table_UseOfBinoculars[,c(1,3,2)] %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  NumberOfObservers
+
+Missing values: `r round(100*sum(is.na(SAMPLES$NumberOfObservers))/nrow(SAMPLES), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(SAMPLES$NumberOfObservers))>0)
+  {
+  table_NumberOfObservers <- as.data.frame(table(SAMPLES$NumberOfObservers))
+  names(table_NumberOfObservers)[1] <- "NumberOfObservers"
+  table_NumberOfObservers %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:75px;">
+
+#  VALIDATE POSITIONS
+###  SampleID *
+
+No missing values: `r sum(is.na(POSITIONS$SampleID))==0`\
+Link to SAMPLES: `r nrow(POSITIONS[POSITIONS$SampleID %in% SAMPLES$SampleID,])==nrow(POSITIONS)`
+
+<div style="margin-top:35px;">
+
+###  PositionID *
+
+No missing values: `r sum(is.na(POSITIONS$PositionID))==0`\
+Unique identifier: `r length(unique(POSITIONS$PositionID))==nrow(POSITIONS)`
+
+<div style="margin-top:35px;">
+
+###  Time *
+No missing values: `r sum(is.na(POSITIONS$Time))==0`\
+Formatted as hh:mm:ss: `r  nrow(POSITIONS[grepl("[0-9]{2}:[0-9]{2}:[0-9]{2}",POSITIONS$Time),]) == nrow(POSITIONS)`
+
+<div style="margin-top:35px;">
+
+###  Latitude / Longitude *
+
+No missing values: `r sum(is.na(POSITIONS[,c("Latitude","Longitude")]))==0`
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+summary(POSITIONS[,c("Latitude","Longitude")])
+Map <- leaflet(POSITIONS) %>%
+  addTiles() %>%
+  addCircleMarkers(lng = POSITIONS$Longitude,
+                   lat = POSITIONS$Latitude, radius = 1, fillOpacity = 1, stroke = FALSE)
+Map
+```
+
+<div style="margin-top:35px;">
+
+###  Distance *
+
+No missing values: `r sum(is.na(POSITIONS$Distance))==0`\
+No zeros : `r sum(POSITIONS$Distance%in%c(0))==0`
+
+<div style="margin-top:35px;">
+
+###  Area *
+
+No missing values: `r sum(is.na(POSITIONS$Area))==0`\
+No zeros : `r sum(POSITIONS$Area%in%c(0))==0`
+
+<div style="margin-top:35px;">
+
+**Distance / Area summaries:**
+```{r, error=TRUE, comment=""}
+summary(POSITIONS[,c("Distance","Area")])
+POS <- merge(POSITIONS, SAMPLES[,c("SampleID","TransectWidth")])
+POS <- POS %>% mutate(test = (Distance*TransectWidth/1000)/Area)
+summary(POS$test)
+```
+
+<div style="margin-top:35px;">
+
+###  WindForce
+
+Missing values: `r round(100*sum(is.na(POSITIONS$WindForce))/nrow(POSITIONS), digits=1)` %
+
+<div style="margin-top:25px;">
+
+```{r, echo=FALSE, error=TRUE, comment=">"}
+if(sum(!is.na(POSITIONS$WindForce))>0)
+  {
+  ggplot(POSITIONS, aes(as.factor(WindForce))) + geom_bar()
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  Visibility
+
+Missing values: `r round(100*sum(is.na(POSITIONS$Visibility))/nrow(POSITIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(POSITIONS$Visibility))>0)
+  {
+  table_Visibility <- merge(
+    as.data.frame(table(POSITIONS$Visibility)), 
+    Visibility[,c("Key","Description")], 
+    by.x="Var1", by.y="Key", all.x=T)
+  names(table_Visibility)[1] <- "Visibility"
+  table_Visibility[,c(1,3,2)] %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  Glare
+
+Missing values: `r round(100*sum(is.na(POSITIONS$Glare))/nrow(POSITIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(POSITIONS$Glare))>0)
+  {
+  table_Glare <- merge(
+    as.data.frame(table(POSITIONS$Glare)), 
+    Glare[,c("Key","Description")],
+    by.x="Var1", by.y="Key", all.x=T)
+  names(table_Glare)[1] <- "Glare"
+  table_Glare[,c(1,3,2)] %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  SunAngle
+#### (expressed in degrees)
+Missing values: `r round(100*sum(is.na(POSITIONS$SunAngle))/nrow(POSITIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(POSITIONS$SunAngle))>0)
+  {
+  summary(POSITIONS$SunAngle)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  CloudCover
+#### (expressed in octas)
+Missing values: `r round(100*sum(is.na(POSITIONS$CloudCover))/nrow(POSITIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(POSITIONS$CloudCover))>0)
+  {
+  summary(POSITIONS$CloudCover)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  Precipitation
+
+Missing values: `r round(100*sum(is.na(POSITIONS$Precipitation))/nrow(POSITIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(POSITIONS$Precipitation))>0)
+  {
+  table_Precipitation <- merge(
+    as.data.frame(table(POSITIONS$Precipitation)), 
+    Precipitation[,c("Key","Description")],
+    by.x="Var1", by.y="Key", all.x=T)
+  names(table_Precipitation)[1] <- "Precipitation"
+  table_Precipitation[,c(1,3,2)] %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  IceCover
+#### (expressed in percentage)
+Missing values: `r round(100*sum(is.na(POSITIONS$IceCover))/nrow(POSITIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(POSITIONS$IceCover))>0)
+  {
+  summary(POSITIONS$IceCover)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  ObservationConditions
+
+Missing values: `r round(100*sum(is.na(POSITIONS$ObservationConditions))/nrow(POSITIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+
+if(sum(!is.na(POSITIONS$ObservationConditions))>0)
+  {
+  table_ObservationConditions <- merge(
+    as.data.frame(table(POSITIONS$ObservationConditions)),
+    Sightability[,c("Key","Description")], 
+    by.x="Var1", by.y="Key", all.x=T)
+  names(table_ObservationConditions)[1] <- "ObservationConditions"
+  table_ObservationConditions[,c(1,3,2)] %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:75px;">
+
+#  VALIDATE OBSERVATIONS
+###  PositionID *
+
+No missing values: `r sum(is.na(OBSERVATIONS$PositionID))==0`\
+Link to SAMPLES: `r nrow(OBSERVATIONS[OBSERVATIONS$PositionID %in% POSITIONS$PositionID,])==nrow(OBSERVATIONS)`
+
+<div style="margin-top:35px;">
+
+###  ObservationID *
+
+No missing values: `r sum(is.na(OBSERVATIONS$ObservationID))==0`\
+Unique identifier: `r length(unique(OBSERVATIONS$ObservationID))==nrow(OBSERVATIONS)`
+
+<div style="margin-top:35px;">
+
+###  GroupID
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+summary(OBSERVATIONS$GroupID)
+```
+
+<div style="margin-top:35px;">
+
+###  Transect *
+
+No missing values: `r sum(is.na(OBSERVATIONS$Transect))==0`\
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+table_Transect <- as.data.frame(table(OBSERVATIONS$Transect))
+names(table_Transect)[1] <- "Transect"
+table_Transect %>%
+  kbl(table.attr = "style='width:30%;'") %>%
+  kable_styling(position = "left", font = 12)
+```
+
+<div style="margin-top:35px;">
+
+###  SpeciesCodeType *
+
+No missing values: `r sum(is.na(OBSERVATIONS$SpeciesCodeType))==0`\
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+table_SpeciesCodeType <- as.data.frame(table(OBSERVATIONS$SpeciesCodeType))
+names(table_SpeciesCodeType)[1] <- "SpeciesCodeType"
+table_SpeciesCodeType %>%
+  kbl(table.attr = "style='width:30%;'") %>%
+  kable_styling(position = "left", font = 12)
+```
+
+<div style="margin-top:35px;">
+
+###  Species *
+
+No missing values: `r sum(is.na(OBSERVATIONS$SpeciesCode))==0`\
+
+Species code(s) with no corresponding code in the ESAS species vocabulary: 
+```{r, echo=FALSE, error=TRUE, comment=""}
+unique(OBSERVATIONS[!(OBSERVATIONS$SpeciesCode %in% Species$esas_code),]$SpeciesCode)
+```
+
+<div style="margin-top:35px;">
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+species_list <- as.data.frame(table(OBSERVATIONS$SpeciesCode))
+species_list <- merge(species_list, Species[,c("esas_code","scientific_name","english_name")], by.x="Var1", by.y="esas_code")
+species_list <- species_list %>% 
+  arrange(as.integer(as.character(Var1))) %>%
+  rename(ESAS_code = Var1)
+row.names(species_list) <- NULL
+species_list[,c(1,4,3,2)] %>%
+  kbl(table.attr = "style='width:75%;'") %>%
+  kable_styling(position = "left", font = 12)
+```
+
+<div style="margin-top:35px;">
+
+###  Count *
+
+No missing values: `r sum(is.na(OBSERVATIONS$Count))==0`\
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+summary(OBSERVATIONS$Count)
+```
+
+<div style="margin-top:35px;">
+
+###  ObservationDistance
+
+Missing values: `r round(100*sum(is.na(OBSERVATIONS$ObservationDistance))/nrow(OBSERVATIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+table_ObservationDistance <- as.data.frame(table(OBSERVATIONS$ObservationDistance, OBSERVATIONS$Transect))
+table_ObservationDistance <- table_ObservationDistance %>%
+  spread(Var2, Freq) %>%
+  rename(ObservationDistance = Var1)
+table_ObservationDistance %>%
+  kbl(table.attr = "style='width:30%;'") %>%
+  kable_styling(position = "left", font = 12)
+```
+
+<div style="margin-top:35px;">
+
+###  LifeStage
+
+Missing values: `r round(100*sum(is.na(OBSERVATIONS$LifeStage))/nrow(OBSERVATIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(OBSERVATIONS$LifeStage))>0)
+  {
+  table_LifeStage <- as.data.frame(table(OBSERVATIONS$LifeStage))
+  names(table_LifeStage)[1] <- "LifeStage"
+  table_LifeStage %>%
+  kbl(table.attr = "style='width:30%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  Moult
+
+Missing values: `r round(100*sum(is.na(OBSERVATIONS$Moult))/nrow(OBSERVATIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(OBSERVATIONS$Moult))>0)
+  {
+  table_Moult <- as.data.frame(table(OBSERVATIONS$Moult))
+  names(table_Moult)[1] <- "Moult"
+  table_Moult %>%
+  kbl(table.attr = "style='width:30%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  Plumage
+
+Missing values: `r round(100*sum(is.na(OBSERVATIONS$Plumage))/nrow(OBSERVATIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(OBSERVATIONS$Plumage))>0)
+  {
+  table_Plumage <- as.data.frame(table(OBSERVATIONS$Plumage))
+  names(table_Plumage)[1] <- "Plumage"
+  table_Plumage %>%
+  kbl(table.attr = "style='width:30%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  Sex
+
+Missing values: `r round(100*sum(is.na(OBSERVATIONS$Sex))/nrow(OBSERVATIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(OBSERVATIONS$Sex))>0)
+  {
+  table_Sex <- as.data.frame(table(OBSERVATIONS$Sex))
+  names(table_Sex)[1] <- "Sex"
+  table_Sex %>%
+  kbl(table.attr = "style='width:30%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  TravelDirection
+
+Missing values: `r round(100*sum(is.na(OBSERVATIONS$TravelDirection))/nrow(OBSERVATIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(OBSERVATIONS$TravelDirection))>0)
+  {
+  table_TravelDirection <- as.data.frame(table(OBSERVATIONS$TravelDirection))
+  names(table_TravelDirection)[1] <- "TravelDirection"
+  table_TravelDirection %>%
+  kbl(table.attr = "style='width:30%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  Prey
+
+Missing values: `r round(100*sum(is.na(OBSERVATIONS$Prey))/nrow(OBSERVATIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(OBSERVATIONS$Prey))>0)
+  {
+  table_Prey <- merge(
+    as.data.frame(table(OBSERVATIONS$Prey)),
+    PreyType[,c("Key", "Description")],
+    by.x="Var1", by.y="Key", all.x=T)
+  names(table_Prey)[1] <- "Prey"
+  table_Prey[,c(1,3,2)] %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  Association
+
+Missing values: `r round(100*sum(is.na(OBSERVATIONS$Association))/nrow(OBSERVATIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(OBSERVATIONS$Association))>0)
+  {
+  table_Association <- merge(
+    as.data.frame(table(OBSERVATIONS$Association)),
+    Association[,c("Key", "Description")],
+    by.x="Var1", by.y="Key", all.x=T)
+  names(table_Association)[1] <- "Association"
+  table_Association[,c(1,3,2)] %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
+
+###  Behaviour
+
+Missing values: `r round(100*sum(is.na(OBSERVATIONS$Behaviour))/nrow(OBSERVATIONS), digits=1)` %
+
+```{r, echo=FALSE, error=TRUE, comment=""}
+if(sum(!is.na(OBSERVATIONS$Behaviour))>0)
+  {
+  table_Behaviour <- merge(
+    as.data.frame(table(OBSERVATIONS$Behaviour)),
+    Behaviour[,c("Key", "Description")],
+    by.x="Var1", by.y="Key", all.x=T)
+  names(table_Behaviour)[1] <- "Behaviour"
+  table_Behaviour[,c(1,3,2)] %>%
+  kbl(table.attr = "style='width:50%;'") %>%
+  kable_styling(position = "left", font = 12)
+  }
+```
+
+<div style="margin-top:35px;">
