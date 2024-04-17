@@ -6,40 +6,44 @@ POSITIONS <- read.csv("POSITIONS_BE_ICES_update_feb_2024.csv", fileEncoding = "U
 OBSERVATIONS <- read.csv("OBSERVATIONS_BE_ICES_update_feb_2024.csv", fileEncoding = "UTF-8")
 
 #Add RecordTypes
-CAMPAIGNS$RecordType <- "EC"
-CAMPAIGNS <- CAMPAIGNS[,c(6,1:5)]
+CAMPAIGNS <- CAMPAIGNS %>%
+  mutate(RecordType = "EC") %>%
+  relocate(RecordType)
 
-SAMPLES$RecordType <- "ES"
-SAMPLES <- SAMPLES[,c(16,1:15)]
+SAMPLES <- SAMPLES %>%
+  mutate(RecordType = "ES") %>%
+  relocate(RecordType)
 
-POSITIONS$RecordType <- "EP"
-POSITIONS <- POSITIONS[,c(16,1:15)]
+POSITIONS <- POSITIONS %>%
+  mutate(RecordType = "EP") %>%
+  relocate(RecordType)
 
-OBSERVATIONS$RecordType <- "EO"
-OBSERVATIONS <- OBSERVATIONS[,c(18,1:17)]
+OBSERVATIONS <- OBSERVATIONS %>%
+  mutate(RecordType = "EO") %>%
+  relocate(RecordType)
 
 #As matrices
 FILE_INFORMATION <- matrix(nrow=1,ncol=18)
 FILE_INFORMATION[1,1:3] <- c("FI","202","BE")
 
-CAMPAIGNS_screen <- matrix(nrow=nrow(CAMPAIGNS),ncol=18)
-CAMPAIGNS_screen[,1:6] <- as.matrix(CAMPAIGNS)
+CAMPAIGNS_matrix <- matrix(nrow=nrow(CAMPAIGNS),ncol=18)
+CAMPAIGNS_matrix[,1:6] <- as.matrix(CAMPAIGNS)
 
-SAMPLES_screen <- matrix(nrow=nrow(SAMPLES),ncol=18)
-SAMPLES_screen[,1:16] <- as.matrix(SAMPLES)
+SAMPLES_matrix <- matrix(nrow=nrow(SAMPLES),ncol=18)
+SAMPLES_matrix[,1:16] <- as.matrix(SAMPLES)
 
-POSITIONS_screen <- matrix(nrow=nrow(POSITIONS),ncol=18)
-POSITIONS_screen[,1:16] <- as.matrix(POSITIONS)
+POSITIONS_matrix <- matrix(nrow=nrow(POSITIONS),ncol=18)
+POSITIONS_matrix[,1:16] <- as.matrix(POSITIONS)
 
-OBSERVATIONS_screen <- matrix(nrow=nrow(OBSERVATIONS),ncol=18)
-OBSERVATIONS_screen[,1:18] <- as.matrix(OBSERVATIONS)
+OBSERVATIONS_matrix <- matrix(nrow=nrow(OBSERVATIONS),ncol=18)
+OBSERVATIONS_matrix[,1:18] <- as.matrix(OBSERVATIONS)
 
 #Bind matrices
 ESAS_2_ICES_DB <- rbind(FILE_INFORMATION,
-                      CAMPAIGNS_screen,
-                      SAMPLES_screen,
-                      POSITIONS_screen,
-                      OBSERVATIONS_screen)
+                      CAMPAIGNS_matrix,
+                      SAMPLES_matrix,
+                      POSITIONS_matrix,
+                      OBSERVATIONS_matrix)
 
 ESAS_2_ICES_DB[is.na(ESAS_2_ICES_DB)] <- ""
 ESAS_2_ICES_DB <- as.data.frame(ESAS_2_ICES_DB)
