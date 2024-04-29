@@ -49,7 +49,7 @@ head(TOTALL)
 summary(TOTALL)
 
 #export:
-getwd()
+setwd("C:/Users/nicolas_vanermen/Desktop/SAS DB 2024/update feb 2024/R exports")
 write.csv(TOTALL, "TOTALL_NoCorr_update_2024_02.csv")
 
 #test:
