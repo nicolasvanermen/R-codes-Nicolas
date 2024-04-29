@@ -48,7 +48,7 @@ head(OBSALL)
 summary(OBSALL)
 
 #export:
-getwd()
+setwd("C:/Users/nicolas_vanermen/Desktop/SAS DB 2024/update feb 2024/R exports")
 write.csv(OBSALL, "OBSALL_update_2024_02.csv")
 
 #test:
