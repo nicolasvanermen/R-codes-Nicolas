@@ -2,14 +2,6 @@
 #en kan aldus als basis dienen voor de 6-jaarlijkse rapportages teneinde ook telkens op dezelfde referentie-aantallen
 #uit te komen
 
-#Enkele kanttekeningen ter eventuele verbetering in het kader van deze of andere analyses:
-#   *Afstand 'U' wordt in deze analyse als 'C' beschouwd; 'U' wordt allicht best uit de distance analyse gelaten
-#   *Groepsgrootte kan ook bepaald worden over de soorten heen, ipv beschouwd per soort zoals dit hier wordt gedaan
-#   *Voor SBE2 wordt best een aparte distance-analyse uitgevoerd, door SBE2 (hoogte 17-22m) versus de oudere schepen 
-#     (hoogte +/- 10m) als factor op te nemen in de modellen bvb
-#   *Opnieuw modelselecties doorlopen mbt wind, wave, group size,...
-
-
 library(tidyverse)
 library(Distance)
 library(mrds)
